@@ -1,12 +1,16 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import validator from 'validator';
+import jwt from 'jsonwebtoken';
 
+import { UserPayload } from '../typings/payload';
 export interface UserDocument extends Document {
   username: string;
   password: string;
   email: string;
   avater: string;
+  getAccessToken: () => string;
+  _doc: UserDocument;
 }
 
 const userScheme: Schema<UserDocument> = new Schema({
@@ -26,7 +30,22 @@ const userScheme: Schema<UserDocument> = new Schema({
     },
     trim: true,
   }
-}, { timestamps: true }); // 使用时间戳 自动添加两个字段 createdAt updatedAt
+}, 
+{ 
+  // 使用时间戳 自动添加两个字段 createdAt updatedAt
+  timestamps: true, 
+  toJSON: {
+    transform: (_doc, result) => {
+      result.id = result._id;
+      delete result._id;
+      delete result.__v;
+      delete result.password;
+      delete result.createdAt;
+      delete result.updatedAt;
+      return result;
+    }
+  } 
+}); 
 
 // 在每次保存文档之前执行的操作
 userScheme.pre<UserDocument>('save', async function(next) {
@@ -41,4 +60,31 @@ userScheme.pre<UserDocument>('save', async function(next) {
   }
 })
 
-export const User: Model<UserDocument> = mongoose.model<UserDocument>('User', userScheme);
+// 给user模型扩展了一个login方法
+userScheme.static('login', async function(this: any, username: string, password: string): Promise<UserDocument | null> {
+  const user: UserDocument | null = await this.model('User').findOne({ username });
+  if (user) {
+    // 判断用户输入的密码和库内存的密码是否匹配
+    const matched = await bcryptjs.compare(password, user.password);
+    if (matched) {
+      return user;
+    } else {
+      return null;
+    }
+  } else {
+    return null;
+  }
+})
+
+// 给user模型的实例扩展方法
+userScheme.methods.getAccessToken = function(this: UserDocument): string {
+  // payload是放在jwt token里存放的数据
+  const payload: UserPayload = { id: this.id };
+  return jwt.sign(payload, process.env.JWT_SECRET_KEY || 'myCats', { expiresIn: '1h' });
+}
+
+interface userModel<T extends Document> extends Model<T> {
+  login: (username: string, password: string) => UserDocument | null
+}
+
+export const User: userModel<UserDocument> = mongoose.model<UserDocument, userModel<UserDocument>>('User', userScheme);

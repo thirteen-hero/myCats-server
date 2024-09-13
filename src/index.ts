@@ -14,7 +14,7 @@ import * as userController from './controllers/user';
 
 const app: Express = express();
 app.use(cors());
-app.use(morgan('dev'));
+app.use(morgan('dev')); 
 app.use(helmet());
 app.use(express.static(path.join(__dirname, 'public'))); // 作为静态文件根目录
 app.use(express.json());
@@ -26,6 +26,9 @@ app.get('/', (_req, res, _next) => {
   })
 });
 app.post('/user/register', userController.register);
+app.post('/user/login', userController.login);
+// 客户端将token传给服务器，服务器返回当前用户，如果token不合法或过期了，则返回null
+app.get('/user/validate', userController.validate);
 // 没有匹配到任何路由 则会创建一个404的错误对象 并传递给错误处理中间件
 app.use((_req: Request, _res: Response, next: NextFunction) => {
   const error: HttpException = new HttpException(404, 'not found');

@@ -8,7 +8,13 @@ const errorMiddleware = (error: HttpException, _req: Request, res: Response, _ne
   .json({
     success: false,
     message: error.message,
-    errors: error.errors,
+    ...(
+      error.errors && 
+      Object.keys(error.errors).length > 0 && 
+      {
+        errors: error.errors 
+      }
+    ),
   });
 }
 
