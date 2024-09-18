@@ -27,7 +27,7 @@ export const register = async(req: Request, res: Response,next: NextFunction) =>
     await user.save();
     res.json({
       success: true,
-      data: user,
+      data: user.toJSON(),
     })
   } catch(error) {
     next(error);

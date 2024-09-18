@@ -30,7 +30,7 @@ export const validateRegisterInput = (
   if (confirmPassword === undefined || confirmPassword.length === 0) {
     errors.confirmPassword = '确认密码不能为空';
   }
-  if (email !== confirmPassword) {
+  if (password !== confirmPassword) {
     errors.confirmPassword = '密码和确认密码不相等';
   }
   return {
