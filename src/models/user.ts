@@ -8,7 +8,7 @@ export interface UserDocument extends Document {
   username: string;
   password: string;
   email: string;
-  avater: string;
+  avatar: string;
   getAccessToken: () => string;
   _doc: UserDocument;
 }
@@ -21,7 +21,7 @@ const userScheme: Schema<UserDocument> = new Schema({
     maxlength: [12, '最大长度不可大于12位'],
   },
   password: String,
-  avater: String,
+  avatar: String,
   email: {
     type: String,
     validate: { // 自定义校验器

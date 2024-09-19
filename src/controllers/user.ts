@@ -79,3 +79,19 @@ export const validate = async(req: Request, res: Response, next: NextFunction) =
     next(new HttpException(StatusCode.UNAUTHORIZED, 'authorization未提供'));
   }
 }
+
+// 上传头像
+export const uploadAvatar = async(req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.body;
+    // 头像存储路径
+    const avatar = `${req.protocol}://${req.headers.host}/uploads/${req.file?.filename}`;
+    await User.updateOne({ _id: userId }, { avatar });
+    res.json({
+      success: true,
+      data: avatar,
+    })
+  } catch (error) {
+    next(error);
+  }
+}
