@@ -10,7 +10,10 @@ import path from 'path';
 import errorMiddleware from './middlewares/errorMiddleware';
 import HttpException from './exceptions/HttpException';
 
+import { Slider } from './models';
+
 import * as userController from './controllers/user';
+import * as sliderController from './controllers/slider';
 // 指定上传文件的存储空间
 const storage = multer.diskStorage({
   // 指定上传的目录
@@ -40,6 +43,7 @@ app.post('/user/login', userController.login);
 app.get('/user/validate', userController.validate);
 // 当服务器端接收到上传文件请求的时候，处理单文件上传。字段名avatar request.file = Express.Multer.File
 app.post('/user/uploadAvatar', upload.single('avatar'), userController.uploadAvatar);
+app.get('/slider/list', sliderController.list);
 // 没有匹配到任何路由 则会创建一个404的错误对象 并传递给错误处理中间件
 app.use((_req: Request, _res: Response, next: NextFunction) => {
   const error: HttpException = new HttpException(404, 'not found');
@@ -49,8 +53,21 @@ app.use(errorMiddleware);
 (async function() {
   const MONGOOSE_URL = process.env.MONGOOSE_URL || 'mongodb+srv://15931602416:<Ww1406010501>@mycats.gsxhf.mongodb.net/';
   await mongoose.connect(MONGOOSE_URL);
+  await createInitialSliders();
   const PORT = process.env.PORT || 8001;
   app.listen(PORT, () => {
     console.log(`Running on http://localhost:${PORT}`);
   })
 })();
+
+async function createInitialSliders() {
+  const sliders = await Slider.find();
+  if(sliders.length === 0) {
+    const sliders = [
+      { url: 'https://vod.xyx234.com/uploads/allimg/190725/7-1ZH5145T30-L.jpg' },
+      { url: 'https://gimg3.baidu.com/search/src=https%3A%2F%2Fimg.chongso.com%2Fimgs%2F78.jpg&refer=http%3A%2F%2Fwww.baidu.com&app=2021&size=w931&n=0&g=0n&er=404&q=75&fmt=auto&maxorilen2heic=2000000?sec=1726851600&t=a647fb5bf8a4b4061e12666b3a25710e' },
+      { url: 'https://gimg3.baidu.com/search/src=https%3A%2F%2Fimg.chongso.com%2Fimgs%2F43.jpg&refer=http%3A%2F%2Fwww.baidu.com&app=2021&size=w931&n=0&g=0n&er=404&q=75&fmt=auto&maxorilen2heic=2000000?sec=1726851600&t=988790721d827522c3126754c8fda2b5' },
+    ];
+    await Slider.create(sliders);
+  }
+}
