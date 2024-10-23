@@ -46,6 +46,7 @@ app.get('/user/validate', userController.validate);
 app.post('/user/uploadAvatar', upload.single('avatar'), userController.uploadAvatar);
 app.get('/slider/list', sliderController.list);
 app.get('/product/list', productController.list);
+app.get('/product/detail', productController.detail);
 // 没有匹配到任何路由 则会创建一个404的错误对象 并传递给错误处理中间件
 app.use((_req: Request, _res: Response, next: NextFunction) => {
   const error: HttpException = new HttpException(404, 'not found');
